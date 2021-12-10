@@ -24,6 +24,8 @@ export class DmgTarget extends Target {
   async build(appPath: string, arch: Arch) {
     const packager = this.packager
     // tslint:disable-next-line:no-invalid-template-strings
+    const appInfo = this.packager.appInfo;
+    const replaceAppPath = appPath.replace(`${appInfo.productName}.app`, `${appInfo.executableName}.app`);
     const artifactName = packager.expandArtifactNamePattern(
       this.options,
       "dmg",
@@ -41,7 +43,7 @@ export class DmgTarget extends Target {
 
     const volumeName = sanitizeFileName(this.computeVolumeName(arch, this.options.title))
 
-    const tempDmg = await createStageDmg(await packager.getTempFile(".dmg"), appPath, volumeName)
+    const tempDmg = await createStageDmg(await packager.getTempFile(".dmg"), replaceAppPath, volumeName)
 
     const specification = await this.computeDmgOptions()
     // https://github.com/electron-userland/electron-builder/issues/2115

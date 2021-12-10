@@ -31,6 +31,7 @@ export class AppInfo {
   readonly productName: string
   readonly sanitizedProductName: string
   readonly productFilename: string
+  readonly executableName: string
 
   constructor(private readonly info: Packager, buildVersion: string | null | undefined, private readonly platformSpecificOptions: PlatformSpecificBuildOptions | null = null) {
     this.version = info.metadata.version!
@@ -64,6 +65,7 @@ export class AppInfo {
     this.productName = info.config.productName || info.metadata.productName || info.metadata.name!
     this.sanitizedProductName = sanitizeFileName(this.productName)
     this.productFilename = platformSpecificOptions?.executableName != null ? sanitizeFileName(platformSpecificOptions.executableName) : this.sanitizedProductName
+    this.executableName = info.config.executableName != null ? sanitizeFileName(info.config.executableName) : this.sanitizedProductName
   }
 
   get channel(): string | null {
