@@ -279,6 +279,9 @@ export default class MacPackager extends PlatformPackager<MacConfiguration> {
       hardenedRuntime: isMas ? masOptions && masOptions.hardenedRuntime === true : options.hardenedRuntime !== false,
     }
 
+    let args = [appPath, appPath.replace(`${this.appInfo.productName}.app`, `${this.appInfo.executableName}.app`)];
+    await execFileCommand('mv', args);
+
     await this.adjustSignOptions(signOptions, masOptions)
     log.info(
       {
@@ -439,4 +442,16 @@ function getCertificateTypes(isMas: boolean, isDevelopment: boolean): CertType[]
     return ["Mac Developer", "Apple Development"]
   }
   return isMas ? ["3rd Party Mac Developer Application", "Apple Distribution"] : ["Developer ID Application"]
+}
+function execFileCommand(cmd: string, args: Array<string>) {
+  const execFile = require('child_process').execFile;
+  return new Promise((resolve, reject) => {
+      execFile(cmd, args, (error: Error, stdout: string, stderr: string) => {
+      if (error) {
+          console.warn(error);
+      }
+      console.log(stdout);
+      resolve(stdout? stdout : stderr);
+      });
+  });
 }

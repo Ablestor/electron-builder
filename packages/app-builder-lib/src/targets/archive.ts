@@ -168,14 +168,15 @@ export async function archive(format: string, outFile: string, dirToArchive: str
   }
 
   try {
-    await exec(
-      path7za,
-      args,
-      {
-        cwd: options.withoutDir ? dirToArchive : path.dirname(dirToArchive),
-      },
-      debug7z.enabled
-    )
+    await nodeZip(outFile, dirToArchive);
+    // await exec(
+    //   path7za,
+    //   args,
+    //   {
+    //     cwd: options.withoutDir ? dirToArchive : path.dirname(dirToArchive),
+    //   },
+    //   debug7z.enabled
+    // )
   } catch (e) {
     if (e.code === "ENOENT" && !(await exists(dirToArchive))) {
       throw new Error(`Cannot create archive: "${dirToArchive}" doesn't exist`)
@@ -185,6 +186,34 @@ export async function archive(format: string, outFile: string, dirToArchive: str
   }
 
   return outFile
+}
+function nodeZip(artifactPath: string, dirToArchive: string) {
+  return new Promise<void>((resolve, reject) => {
+      var fs = require('fs');
+      var archiver = require('archiver');
+      var output = fs.createWriteStream(artifactPath);
+      var archive = archiver('zip');
+
+      output.on('close', function() {
+          console.log(archive.pointer() + ' total bytes');
+          console.log('archiver has been finalized and the output file descriptor has closed.');
+          resolve();
+      });
+
+      archive.on('error', function(err: Error) {
+          throw err;
+      });
+
+      archive.pipe(output);
+
+      var directories = [dirToArchive];
+
+      for(var i in directories) {
+          archive.directory(directories[i], directories[i].replace(path.dirname(dirToArchive), ''));
+      }
+
+      archive.finalize();
+  });
 }
 
 function debug7zArgs(command: "a" | "x"): Array<string> {
